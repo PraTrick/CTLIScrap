@@ -99,7 +99,6 @@ public class PopulatePageService implements IPopulatePageService {
 			while ((line = issueBuffer.readLine()) != null) {
 				String[] issueItemArray = line.split("--");
 				Issue issue = new Issue();
-				issue.setIssueID(Integer.parseInt(issueItemArray[0]));
 				issue.setTitle(issueItemArray[1]);
 				issue.setDeveloperName(issueItemArray[2]);
 				issue.setStatus(issueItemArray[3]);

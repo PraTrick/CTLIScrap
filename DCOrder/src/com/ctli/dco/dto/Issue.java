@@ -2,17 +2,10 @@ package com.ctli.dco.dto;
 
 public class Issue {
 
-	int issueID;
 	String title;
 	String developerName;
 	String status;
 	
-	public int getIssueID() {
-		return issueID;
-	}
-	public void setIssueID(int id) {
-		this.issueID = id;
-	}
 	public String getTitle() {
 		return title;
 	}

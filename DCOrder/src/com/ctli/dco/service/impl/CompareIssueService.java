@@ -13,7 +13,6 @@ import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
-
 import com.ctli.dco.dto.Developer;
 import com.ctli.dco.dto.Issue;
 import com.ctli.dco.service.ICompareIssueService;
@@ -26,19 +25,45 @@ public class CompareIssueService implements ICompareIssueService {
         BufferedReader brNew = null;
         BufferedReader brIgnore = null;
 
-        File oldYesterdayTxt = new File("inputFiles/" + type
-                + "/input/yesterday.txt");
-        File todayTxt = new File("inputFiles/" + type + "/input/today.txt");
-        File ignoredIssuesTxt = new File("inputFiles/" + type
-                + "/input/ignoredIssues.txt");
-        File source = new File("inputFiles/" + type + "/new/results.txt");
-        File automatedIssues = new File("flatFiles/" + type
-                + "/automatedIssues.txt");
-        File resultsInputFile = new File(resultsFile);
-        File commonData = new File("inputFiles/" + type
-                + "/output/commonData.txt");
-        File filteredData = new File("inputFiles/" + type
-                + "/output/filteredData.txt");
+        String repository = "C:/" + type + "/";
+        File yesterdayTxt = new File(repository
+                + "inputFiles/input/yesterday.txt");
+        File todayTxt = new File(repository + "inputFiles/input/today.txt");
+        File ignoredIssuesTxt = new File(repository
+                + "inputFiles/input/ignoredIssues.txt");
+        File source = new File(repository + "inputFiles/new/results.txt");
+
+        File resultsInputFile = null;
+        if (resultsFile.contains("C:"))
+            resultsInputFile = new File(resultsFile);
+        else
+            resultsInputFile = new File(repository + resultsFile);
+
+        File commonData = new File(repository
+                + "inputFiles/output/commonData.txt");
+        File prevAssignment = new File(repository
+                + "inputFiles/output/commonDataPrev.txt");
+        File filteredData = new File(repository
+                + "inputFiles/output/filteredData.txt");
+
+        /*
+         * File yesterdayTxt = new File("inputFiles/" + type +
+         * "/input/yesterday.txt"); File todayTxt = new File("inputFiles/" +
+         * type + "/input/today.txt"); File ignoredIssuesTxt = new
+         * File("inputFiles/" + type + "/input/ignoredIssues.txt"); File source
+         * = new File("inputFiles/" + type + "/new/results.txt");
+         */
+        /*
+         * File automatedIssues = new File("flatFiles/" + type +
+         * "/automatedIssues.txt");
+         */
+        /*
+         * File resultsInputFile = new File(resultsFile); File commonData = new
+         * File("inputFiles/" + type + "/output/commonData.txt"); File
+         * prevAssignment = new File("inputFiles/" + type +
+         * "/output/commonDataPrev.txt"); File filteredData = new
+         * File("inputFiles/" + type + "/output/filteredData.txt");
+         */
 
         try {
 
@@ -51,13 +76,12 @@ public class CompareIssueService implements ICompareIssueService {
 
             try {
                 copyFile(resultsInputFile, source);
-                moveFile(todayTxt, oldYesterdayTxt);
+                moveFile(todayTxt, yesterdayTxt);
                 copyFile(source, todayTxt);
+                copyFile(commonData, prevAssignment);
 
-                brOld = new BufferedReader(new FileReader("inputFiles/" + type
-                        + "/input/yesterday.txt"));
-                brNew = new BufferedReader(new FileReader("inputFiles/" + type
-                        + "/input/today.txt"));
+                brOld = new BufferedReader(new FileReader(yesterdayTxt));
+                brNew = new BufferedReader(new FileReader(todayTxt));
                 brIgnore = new BufferedReader(new FileReader(ignoredIssuesTxt));
 
             } catch (Exception e) {
@@ -90,8 +114,12 @@ public class CompareIssueService implements ICompareIssueService {
             for (String oldFileRow : oldFileDataArrayList) {
                 if (newFileDataArrayList.contains(oldFileRow)
                         && ifNotIgnoredIssue(oldFileRow, ignoredDataArrayList)) {
-                    commonFileDataArrayList.add(oldFileRow);
-                    newFileDataArrayList.remove(oldFileRow);
+                    if (!oldFileRow.contains("blbn_olnrc")) {
+                        commonFileDataArrayList.add(oldFileRow);
+                        newFileDataArrayList.remove(oldFileRow);
+                    } else {
+                        newFileDataArrayList.remove(oldFileRow);
+                    }
                 }
             }
 
@@ -123,6 +151,8 @@ public class CompareIssueService implements ICompareIssueService {
                                     ignoredDataArrayList)) {
                         commonFileDataArrayList
                                 .add(newFileDataArrayList.get(0));
+                        // change
+                        newFileDataArrayList.clear();
                     }
                 }
             }
@@ -156,19 +186,23 @@ public class CompareIssueService implements ICompareIssueService {
 
             System.out.println("----File(s) Generated----");
             System.out.println("filteredData.txt");
-            System.out
-                    .println("----------------------------------------------------------------");
+            System.out.println("=============================");
 
             commonDataBuffer.close();
             filteredDataBuffer.close();
-            assignIssues();
-            copyFile(filteredData, automatedIssues);
+            assignIssues(type);
 
             System.out.println("----File(s) Generated----");
-            System.out.println("automatedIssues.txt");
             System.out.println("commonData.txt");
-            System.out
-                    .println("----------------------------------------------------------------");
+
+            /*
+             * copyFile(filteredData, automatedIssues);
+             * 
+             * System.out.println("----File(s) Generated----");
+             * System.out.println("automatedIssues.txt");
+             */
+
+            System.out.println("=============================");
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
@@ -184,15 +218,26 @@ public class CompareIssueService implements ICompareIssueService {
 
     }
 
-    public ArrayList<Issue> assignIssues() {
+    private ArrayList<Issue> assignIssues(String type) {
         ArrayList<Issue> issueList = new ArrayList<Issue>();
-        ArrayList<Developer> devList = new ArrayList<Developer>();
+        // ArrayList<Developer> devList = new ArrayList<Developer>();
+        ArrayList<String> devListArray = new ArrayList<String>();
 
-        File prevAssignment = new File(
-                "inputFiles/DC_ORDER/output/commonDataPrev.txt");
-        File issuesDirectory = new File(
-                "inputFiles/DC_ORDER/output/commonData.txt");
-        File devDirectory = new File("referenceData/DeveloperList.txt");
+        String repository = "C:/" + type + "/";
+        File prevAssignment = new File(repository
+                + "inputFiles/output/commonDataPrev.txt");
+        File issuesDirectory = new File(repository
+                + "inputFiles/output/commonData.txt");
+        File devDirectory = new File(repository
+                + "referenceData/DeveloperList.txt");
+
+        /*
+         * File prevAssignment = new File(
+         * "inputFiles/DC_ORDER/output/commonDataPrev.txt"); File
+         * issuesDirectory = new File(
+         * "inputFiles/DC_ORDER/output/commonData.txt"); File devDirectory = new
+         * File("referenceData/DeveloperList.txt");
+         */
 
         BufferedReader issueBuffer = null;
         BufferedReader prevIssueBuffer = null;
@@ -211,12 +256,12 @@ public class CompareIssueService implements ICompareIssueService {
             devBuffer = new BufferedReader(new FileReader(devDirectory));
             while ((currentLine = devBuffer.readLine()) != null) {
                 if (!currentLine.contains("#")) {
-                    Developer dev = new Developer();
-                    dev.setName(currentLine.split(",")[0]);
-                    dev.setThreshold(Integer.parseInt(currentLine.split(",")[1]));
-                    devList.add(dev);
+                    devListArray.add(currentLine.split(",")[1]);
+                    id++;
                 }
             }
+
+            int devListSize = id;
 
             issueBuffer = new BufferedReader(new FileReader(issuesDirectory));
             while ((currentLine = issueBuffer.readLine()) != null) {
@@ -226,81 +271,74 @@ public class CompareIssueService implements ICompareIssueService {
                 issueList.add(issue);
             }
 
-            int thresholdDev = issueList.size() / devList.size();
-
-            for (Developer devitem : devList) {
-                devitem.setThreshold(thresholdDev);
-            }
-            Iterator<Developer> itr = devList.iterator();
-            Developer nextdevItem = itr.next();
-
+            int thresholdDev = (issueList.size() / devListSize);
             id = 0;
+            Developer[] devList = new Developer[devListSize];
+
+            for (id = 0; id < devListSize; id++) {
+                devList[id] = new Developer(devListArray.get(id), thresholdDev);
+            }
+
+            for (Issue issueItem : issueList) {
+                for (String oldFileRow : oldAssignDataArrayList) {
+                    if (oldFileRow.contains(issueItem.getTitle())) {
+                        issueItem.setDeveloperName(oldFileRow.split("\t")[1]);
+                        issueItem.setStatus("Assigned");
+
+                        setThreshold(oldFileRow.split("\t")[1], devList,
+                                devListSize);
+                        Developer.sort(devList,
+                                Developer.BY_TOTALREQUIREDISSUES);
+                        break;
+                    }
+                }
+            }
+
+            Developer.sort(devList, Developer.BY_TOTALREQUIREDISSUES);
             boolean allThresholdUsed = false;
-            boolean prevIssueAssigned = false;
 
             try {
                 if (thresholdDev > 0) {
                     for (Issue issueItem : issueList) {
+                        Developer nextdevItem = devList[0];
                         if (issueItem.getStatus().equalsIgnoreCase(
                                 "Not Assigned")
                                 && allThresholdUsed == false) {
-                            for (String oldFileRow : oldAssignDataArrayList) {
-                                if (oldFileRow.contains(issueItem.getTitle())) {
-                                    issueItem.setDeveloperName(oldFileRow
-                                            .split(" ")[1]);
-                                    issueItem.setStatus("Assigned");
-
-                                    setThreshold(oldFileRow.split(" ")[1],
-                                            devList);
-
-                                    prevIssueAssigned = true;
-                                    break;
-                                }
-                            }
-
-                            if (prevIssueAssigned == false) {
-                                if (nextdevItem.getThreshold() > 0) {
-                                    issueItem.setDeveloperName(nextdevItem
-                                            .getName());
-                                    issueItem.setStatus("Assigned");
-                                    nextdevItem.setThreshold((nextdevItem
-                                            .getThreshold() - 1));
-                                } else {
-                                    nextdevItem = itr.next();
-                                    nextdevItem.setThreshold(thresholdDev);
-                                    issueItem.setDeveloperName(nextdevItem
-                                            .getName());
-                                    issueItem.setStatus("Assigned");
-                                    nextdevItem.setThreshold((nextdevItem
-                                            .getThreshold() - 1));
-                                }
+                            if (nextdevItem.getThreshold() > 0) {
+                                issueItem.setDeveloperName(nextdevItem
+                                        .getName());
+                                issueItem.setStatus("Assigned");
+                                nextdevItem.setThreshold((nextdevItem
+                                        .getThreshold() - 1));
+                                Developer.sort(devList,
+                                        Developer.BY_TOTALREQUIREDISSUES);
                             } else {
-                                prevIssueAssigned = false;
+                                allThresholdUsed = true;
                             }
                         }
                     }
                 }
 
             } catch (NoSuchElementException e) {
-                allThresholdUsed = true;
                 System.out.println("Reached at the end of iteration!");
             }
 
+            Developer.sort(devList, Developer.BY_TOTALREQUIREDISSUES);
+
             for (Issue issueItem : issueList) {
+                Developer nextdevItem = devList[0];
                 if (issueItem.getStatus().equalsIgnoreCase("Not Assigned")
                         && (allThresholdUsed == true || thresholdDev == 0)) {
-                    issueItem.setDeveloperName(devList.get(id).getName());
+                    issueItem.setDeveloperName(nextdevItem.getName());
                     issueItem.setStatus("Assigned");
-                    id++;
-                }
-                if (id == devList.size()) {
-                    id = 0;
+                    nextdevItem.setThreshold((nextdevItem.getThreshold() - 1));
+                    Developer.sort(devList, Developer.BY_TOTALREQUIREDISSUES);
                 }
             }
 
             PrintWriter pw = new PrintWriter(issuesDirectory);
             for (Issue issueItem : issueList) {
-                pw.println(issueItem.getTitle() + " "
+                pw.println(issueItem.getTitle() + "\t"
                         + issueItem.getDeveloperName());
             }
             pw.close();
@@ -316,11 +354,10 @@ public class CompareIssueService implements ICompareIssueService {
                 System.out.println(e.getMessage());
             }
         }
-        copyFile(issuesDirectory, prevAssignment);
         return issueList;
     }
 
-    public void copyFile(File source, File dest) {
+    private void copyFile(File source, File dest) {
         FileChannel inputChannel = null;
         FileChannel outputChannel = null;
         try {
@@ -342,12 +379,12 @@ public class CompareIssueService implements ICompareIssueService {
         }
     }
 
-    public void moveFile(File todayTxt, File oldYesterdayTxt) {
-        copyFile(todayTxt, oldYesterdayTxt);
+    public void moveFile(File todayTxt, File yesterdayTxt) {
+        copyFile(todayTxt, yesterdayTxt);
         deleteFile(todayTxt);
     }
 
-    public void deleteFile(File todayTxt) {
+    private void deleteFile(File todayTxt) {
         if (todayTxt.delete()) {
             System.out.println("Deleted File : " + todayTxt.getAbsolutePath());
         } else {
@@ -355,15 +392,22 @@ public class CompareIssueService implements ICompareIssueService {
         }
     }
 
-    public void setThreshold(String devName, ArrayList<Developer> devList) {
-        for (Developer tempDev : devList) {
-            if (tempDev.getName().equalsIgnoreCase(devName)) {
-                tempDev.setThreshold((tempDev.getThreshold() - 1));
+    /*
+     * private void setThreshold(String devName, ArrayList<Developer> devList) {
+     * for (Developer tempDev : devList) { if
+     * (tempDev.getName().equalsIgnoreCase(devName)) {
+     * tempDev.setThreshold((tempDev.getThreshold() - 1)); } } }
+     */
+
+    private void setThreshold(String devName, Developer[] devList, int size) {
+        for (int i = 0; i < size; i++) {
+            if (devList[i].getName().equalsIgnoreCase(devName)) {
+                devList[i].setThreshold((devList[i].getThreshold() - 1));
             }
         }
     }
 
-    public boolean ifNotIgnoredIssue(String fileRow,
+    private boolean ifNotIgnoredIssue(String fileRow,
             ArrayList<String> ignoredDataArrayList) {
         for (String ignoredData : ignoredDataArrayList)
             if (fileRow.contains(ignoredData))
