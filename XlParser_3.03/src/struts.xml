@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE struts PUBLIC
+    "-//Apache Software Foundation//DTD Struts Configuration 2.0//EN"
+    "http://struts.apache.org/dtds/struts-2.0.dtd">
+
+<struts>
+	<constant name="struts.enable.DynamicMethodInvocation" value="false" />
+	<constant name="struts.devMode" value="false" />
+	<constant name="struts.custom.i18n.resources" value="ApplicationResources" />
+
+	<package name="default" extends="struts-default" namespace="/">
+
+		<action name="home" class="com.centurylink.xprsr.action.HomeAction">
+			<result name="success">parser.jsp</result>
+		</action>
+
+		<action name="download" class="com.centurylink.xprsr.action.HomeAction"
+			method="downloadFile">
+			<result name="success" type="stream">
+				<param name="contentType">application/octet-stream</param>
+				<param name="inputName">fileInputStream</param>
+				<param name="contentDisposition">attachment;filename="template.xlsx"</param>
+				<param name="bufferSize">1024</param>
+			</result>
+		</action>
+
+		<action name="upload" class="com.centurylink.xprsr.action.ReadAction"
+			method="uploadFile">
+			<interceptor-ref name="exception" />
+			<interceptor-ref name="i18n" />
+			<interceptor-ref name="fileUpload">
+				<param name="allowedTypes">application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,
+					application/ms-excel,application/vnd.ms-excel</param>
+			</interceptor-ref>
+			<interceptor-ref name="params">
+				<param name="excludeParams">dojo\..*,^struts\..*</param>
+			</interceptor-ref>
+			<interceptor-ref name="validation">
+				<param name="excludeMethods">input,back,cancel,browse</param>
+			</interceptor-ref>
+			<interceptor-ref name="workflow">
+				<param name="excludeMethods">input,back,cancel,browse</param>
+			</interceptor-ref>
+
+			<result name="success">parsedXl.jsp</result>
+			<result name="error">parser.jsp</result>
+
+		</action>
+
+		<action name="assignTickets" class="com.centurylink.xprsr.action.AssignTicketsAction">
+			<result name="success">autoAssignedXl.jsp</result>
+			<result name="error">autoAssignedXl.jsp</result>
+		</action>
+
+		<action name="thanks" class="com.centurylink.xprsr.action.ThanksAction">
+			<result name="success">thanks.jsp</result>
+		</action>
+
+	</package>
+</struts>
