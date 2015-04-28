@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE struts PUBLIC
+    "-//Apache Software Foundation//DTD Struts Configuration 2.0//EN"
+    "http://struts.apache.org/dtds/struts-2.0.dtd">
+
+<struts>
+	<constant name="struts.enable.DynamicMethodInvocation" value="false" />
+	<constant name="struts.devMode" value="false" />
+
+	<constant name="struts.custom.i18n.resources" value="ApplicationResources" />
+
+	<package name="default" extends="struts-default" namespace="/">
+	
+	    <action name="home" class="com.centurylink.xprsr.action.HomeAction">
+            <result name="success" >parser.jsp</result>
+        </action>
+
+		<action name="getEscalatedTickets" class="com.centurylink.xprsr.action.HomeAction" method = "getEscalatedTicketList">
+            <result name="success" >home.jsp</result>
+        </action>
+        
+        <action name="read" class="com.centurylink.xprsr.action.ReadAction">
+			<result name="success" >manualAssignedXl.jsp</result>
+			<result name="doubleSuccess">parsedXl.jsp</result>
+			<result name="error">parser.jsp</result>
+		</action>
+		
+		<action name="assignTickets" class="com.centurylink.xprsr.action.AssignTicketsAction" method = "ticketCounter">
+            <result name="success">autoAssignedXl.jsp</result>
+            <result name="error">parser.jsp</result>
+        </action>
+        
+        <action name="write" class="com.centurylink.xprsr.action.WriteAction">
+            <result name="success">thanks.jsp</result>
+            <result name="error">parser.jsp</result>
+        </action>
+        
+        <action name="writeManualExcel" class="com.centurylink.xprsr.action.WriteAction" method ="writeManualExcel">
+            <result name="success">thanks.jsp</result>
+            <result name="error">parser.jsp</result>
+        </action>
+        
+        
+        <action name="modifyName" class="com.centurylink.xprsr.action.ModifyAction">
+            <result name="success">manualAssignedXl.jsp</result>
+            <result name="error">parser.jsp</result>
+        </action>
+        
+        
+        <action name="modifyStatus" class="com.centurylink.xprsr.action.ModifyAction" method = "modifyStatus">
+            <result name="success">manualAssignedXl.jsp</result>
+            <result name="error">parser.jsp</result>
+        </action>
+        
+        <action name="validate" class="com.centurylink.xprsr.action.ReportAction" method = "validatePortal">
+            <result name="success">prtlValRprt.jsp</result>
+            <result name="error">prtlValRprt.jsp</result>
+        </action>
+        
+        <action name="report" class="com.centurylink.xprsr.action.ReportAction" method = "weeklyReport">
+            <result name="success">ticketWeeklyReport.jsp</result>
+            <result name="error">ticketWeeklyReport.jsp</result>
+        </action>
+
+	</package>
+</struts>
+
+
+
+
